@@ -1,0 +1,31 @@
+[package]
+name = "grs"
+version = "0.20.0"
+edition = "2024"
+authors = ["GoldSrc.rs Team"]
+description = "Developer CLI and tooling suite for GoldSrc.rs engine plugins"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/goldsrc-rs/goldsrc-cli"
+
+[[bin]]
+name = "grs"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.5", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "1.1"
+stitch-cli = { git = "https://github.com/ulquiorracode/stitch-rs.git", branch = "main" }
+
+[profile.dev]
+opt-level = 0
+debug = 1
+overflow-checks = true
+
+[profile.release]
+lto = "thin"
+opt-level = "z"
+strip = "debuginfo"
+panic = "unwind"
+overflow-checks = true

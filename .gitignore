@@ -1,0 +1,38 @@
+# Rust
+target/
+**/*.rs.bk
+.cargo/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Reference repositories (downloaded via scripts/setup.py)
+references/
+scripts/crash-analyzer/
+tools/
+
+*.local
+*.local.*
+# Temporary build files
+*.bat
+*.o
+*.exp
+*.lib
+
+# Private data (local configs, agent work, personal files)
+private/
+docs/
+scratch/
+
+# Environment
+.env
+.env.*
+__pycache__/
