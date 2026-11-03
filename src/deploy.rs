@@ -71,7 +71,7 @@ pub fn execute_deploy(opts: DeployOptions<'_>, config: &LocalConfig) -> Result<(
         BackendType::Standalone => target_mod_dir.join("goldsrc"),
     };
     let plugins_dir = goldsrc_dir.join("plugins");
-    let lang_dir = goldsrc_dir.join("lang");
+    let lang_dir = goldsrc_dir.join("data").join("lang");
 
     println!("Deploy target: {}", goldsrc_dir.display());
 
@@ -183,6 +183,9 @@ pub fn execute_deploy(opts: DeployOptions<'_>, config: &LocalConfig) -> Result<(
             PathBuf::from(format!(
                 "../goldsrc-runtime/target/{host_triple}/release/{bin_name}"
             )),
+            PathBuf::from(format!(
+                "goldsrc-runtime/target/{host_triple}/release/{bin_name}"
+            )),
             PathBuf::from(format!("target/{host_triple}/release/{bin_name}")),
             PathBuf::from(format!(
                 "../goldsrc-runtime/target/{host_triple}/debug/{bin_name}"
@@ -206,15 +209,27 @@ pub fn execute_deploy(opts: DeployOptions<'_>, config: &LocalConfig) -> Result<(
         }
     }
 
-    // Scan for compiled .wasm plugins in target/wasm32-unknown-unknown/release
-    let wasm_source_dir = Path::new("target/wasm32-unknown-unknown/release");
-    if let Ok(entries) = fs::read_dir(wasm_source_dir) {
-        for entry in entries.flatten() {
-            let path = entry.path();
-            if path.extension().and_then(|s| s.to_str()) == Some("wasm") {
-                let dest = plugins_dir.join(path.file_name().unwrap());
-                println!("Deploying plugin: {} -> {}", path.display(), dest.display());
-                fs::copy(&path, &dest).map_err(|e| e.to_string())?;
+    // Scan for compiled .wasm plugins across candidate directories
+    let wasm_candidate_dirs = [
+        PathBuf::from("target/wasm32-unknown-unknown/release"),
+        PathBuf::from("goldsrc-plugins-standard/target/wasm32-unknown-unknown/release"),
+        PathBuf::from("../goldsrc-plugins-standard/target/wasm32-unknown-unknown/release"),
+        PathBuf::from("goldsrc-sdk-cstrike/target/wasm32-unknown-unknown/release"),
+        PathBuf::from("../goldsrc-sdk-cstrike/target/wasm32-unknown-unknown/release"),
+    ];
+    let mut deployed_plugins = std::collections::HashSet::new();
+    for wasm_dir in &wasm_candidate_dirs {
+        if let Ok(entries) = fs::read_dir(wasm_dir) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path.extension().and_then(|s| s.to_str()) == Some("wasm") {
+                    let file_name = path.file_name().unwrap().to_os_string();
+                    if deployed_plugins.insert(file_name.clone()) {
+                        let dest = plugins_dir.join(&file_name);
+                        println!("Deploying plugin: {} -> {}", path.display(), dest.display());
+                        fs::copy(&path, &dest).map_err(|e| e.to_string())?;
+                    }
+                }
             }
         }
     }
