@@ -11,6 +11,7 @@ mod deploy;
 mod patch;
 mod scaffold;
 mod setup;
+mod telemetry;
 
 use config::{BackendType, LocalConfig};
 
@@ -102,6 +103,11 @@ enum Commands {
     Pl {
         #[command(subcommand)]
         sub: PlCommands,
+    },
+    /// Inspect GoldSrc telemetry binary containers (.stitch)
+    Telemetry {
+        #[command(subcommand)]
+        sub: telemetry::TelemetryCommands,
     },
 }
 
@@ -222,5 +228,11 @@ fn main() {
                 println!("Plugin memory telemetry: active");
             }
         },
+        Commands::Telemetry { sub } => {
+            if let Err(err) = telemetry::execute_telemetry(sub) {
+                eprintln!("Telemetry inspection error: {err}");
+                std::process::exit(1);
+            }
+        }
     }
 }
