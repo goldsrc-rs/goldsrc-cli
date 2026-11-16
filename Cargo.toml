@@ -1,5 +1,5 @@
 [package]
-name = "grs"
+name = "goldsrc-cli"
 version = "0.20.0"
 edition = "2024"
 authors = ["GoldSrc.rs Team"]
